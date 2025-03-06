@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-from scipy.stats import zscore
 import glob
 
 file_num = 1
@@ -10,19 +9,43 @@ for file in csv_files:
     csv_file = pd.read_csv(file)
 
     # Remove features that have little to zero correlation to the labels
-    data_w_dropped_cols = csv_file.drop(columns=['CH', 'FRAME_LEN', 'BITRATE', 'PRFR'])
+    data_w_dropped_cols = csv_file.drop(columns=['CH', 'FRAME_LEN', 'BITRATE', 'PRFR', 'PREAM_LEN'])
     print(f'Successfully dropped unused columns in {csv_file}.')
 
     # detect outliers
-    # using IQR
-    Q1 = data_w_dropped_cols.quantile(0.25)
-    Q3 = data_w_dropped_cols.quantile(0.75)
+    # extract summary statistics from CIR
+    data_w_dropped_cols['CIR_MEAN'] = data_w_dropped_cols.loc[:, 'CIR0':'CIR1015'].mean(axis=1)
+    data_w_dropped_cols['CIR_MAX'] = data_w_dropped_cols.loc[:, 'CIR0':'CIR1015'].max(axis=1)
+    data_w_dropped_cols['CIR_MIN'] = data_w_dropped_cols.loc[:, 'CIR0':'CIR1015'].min(axis=1)
+
+    # List of features for outlier detection
+    features_for_outliers = [
+        'FP_IDX',       # First path index
+        'FP_AMP1',      # First path amplitude part 1
+        'FP_AMP2',      # First path amplitude part 2
+        'FP_AMP3',      # First path amplitude part 3
+        'STDEV_NOISE',  # Standard deviation of noise
+        'CIR_PWR',      # Total channel impulse response power
+        'MAX_NOISE',    # Maximum value of noise
+        'RXPACC',       # Received RX preamble symbols
+        'CIR_MEAN',     # Mean of CIR
+        'CIR_MAX',      # Maximum of CIR
+        'CIR_MIN'      # Minimum of CIR
+    ]
+
+    # using iqr
+    Q1 = data_w_dropped_cols[features_for_outliers].quantile(0.25)
+    Q3 = data_w_dropped_cols[features_for_outliers].quantile(0.75)
     IQR = Q3 - Q1
-    outliers_iqr = ((data_w_dropped_cols < (Q1 - 1.5 * IQR)) | (data_w_dropped_cols > (Q3 + 1.5 * IQR))).any(axis=1)
+    outliers_iqr = ((data_w_dropped_cols[features_for_outliers] < (Q1 - 1.5 * IQR)) | (data_w_dropped_cols[features_for_outliers] > (Q3 + 1.5 * IQR)))
     print(f"Number of outliers detected using IQR: {outliers_iqr.sum()}")
 
+    # flag a row as an outlier if at least 3 features have outliers
+    outliers_multiple_features = outliers_iqr.sum(axis=1) >= 3  # adjust threshold as needed
+    print(f"Number of rows flagged as outliers: {outliers_multiple_features.sum()}")
+
     # remove outliers
-    data_no_outliers = data_w_dropped_cols[~outliers_iqr]
+    data_no_outliers = data_w_dropped_cols[~outliers_multiple_features]
     print(f"Number of rows after removing outliers: {len(data_no_outliers)}")
 
     # detect duplicates
