@@ -39,8 +39,6 @@ upload_dataframe_to_gcs(aggregated_dataset, 'processed-los-nlos-data', 'aggregat
 # non_num_val_cols = dataset[dataset > 0].index.tolist()
 # print('Columns with non-numeric values: ', non_num_val_cols)
 
-
-
 # print('Number of missing values:')
 # for col in cir_features.columns:
 #     if cir_features[col].isna().sum() != 0:
