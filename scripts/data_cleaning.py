@@ -20,17 +20,17 @@ for file in csv_files:
 
     # List of features for outlier detection
     features_for_outliers = [
-        'FP_IDX',       # First path index
-        'FP_AMP1',      # First path amplitude part 1
-        'FP_AMP2',      # First path amplitude part 2
-        'FP_AMP3',      # First path amplitude part 3
-        'STDEV_NOISE',  # Standard deviation of noise
-        'CIR_PWR',      # Total channel impulse response power
-        'MAX_NOISE',    # Maximum value of noise
-        'RXPACC',       # Received RX preamble symbols
-        'CIR_MEAN',     # Mean of CIR
-        'CIR_MAX',      # Maximum of CIR
-        'CIR_MIN'      # Minimum of CIR
+        'FP_IDX',       
+        'FP_AMP1',      
+        'FP_AMP2',      
+        'FP_AMP3',      
+        'STDEV_NOISE',  
+        'CIR_PWR',      
+        'MAX_NOISE',    
+        'RXPACC',       
+        'CIR_MEAN',     
+        'CIR_MAX',      
+        'CIR_MIN'      
     ]
 
     # using iqr
