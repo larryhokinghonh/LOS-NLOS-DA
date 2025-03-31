@@ -2,4 +2,5 @@
 venv
 data/cleaned
 data/processed
+/models
 los-nlos-da-580abb350162.json
